@@ -1,12 +1,14 @@
+mod files;
+
+use files::Result;
 use std::fs::File;
-fn main() {
-    let f = File::open("src/data/content.txt");
-    match f {
-        Ok(file) => {
-            println!("The file content {:?}", file);
-        }
-        Err(err) => {
-            println!("The error {:?}", err)
-        }
-    }
+use std::io::prelude::*;
+
+fn main() -> Result<()> {
+    let mut file = File::open("src/data/content.txt")?;
+    let mut buffer = String::new();
+    file.read_to_string(&mut buffer);
+
+    println!("The content {:?}", buffer);
+    Ok(())
 }
