@@ -1,13 +1,15 @@
-mod durable;
+mod tcp_echo;
 
-use durable::{DurableFile, Result};
-use std::fs::File;
-use std::io::prelude::*;
+use std::io;
+use std::net::TcpListener;
+use tcp_echo::handle_client;
 
-fn main() -> Result<()> {
-    let file = File::create("src/data/example.txt")?;
-    let mut durable_file = DurableFile::from(file);
-    durable_file.write(b"Hello, world!")?;
-    durable_file.close()?;
+fn main() -> io::Result<()> {
+    let listener = TcpListener::bind("127.0.0.1:8080")?;
+
+    // accept connections and process them serially
+    for stream in listener.incoming() {
+        handle_client(stream?);
+    }
     Ok(())
 }
