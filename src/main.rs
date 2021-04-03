@@ -7,7 +7,7 @@ use std::io::BufReader;
 
 fn main() -> Result<()> {
     let file = File::open("src/data/content.txt")?;
-    let mut reader = BufReader::new(file);
+    let reader = BufReader::new(file);
     let desired_content = reader
         .lines()
         .filter_map(|l| l.ok())
