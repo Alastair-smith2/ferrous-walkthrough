@@ -8,3 +8,4 @@ edition = "2018"
 
 [dependencies]
 url = "2"
+tempdir = "0.3"
