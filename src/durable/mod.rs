@@ -44,7 +44,6 @@ impl std::ops::Drop for DurableFile {
         if self.needs_sync {
             panic!("File needed syncing")
         }
-        drop(self);
     }
 }
 
