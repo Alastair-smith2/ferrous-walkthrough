@@ -1,10 +1,12 @@
-mod fizz_buzz;
-
-use fizz_buzz::fizzbuzz;
+use std::fs::File;
 fn main() {
-    for i in 1..=100 {
-        // counts including 100
-        let result = fizzbuzz(i);
-        println!("The result {:?}", result);
+    let f = File::open("src/data/content.txt");
+    match f {
+        Ok(file) => {
+            println!("The file content {:?}", file);
+        }
+        Err(err) => {
+            println!("The error {:?}", err)
+        }
     }
 }
