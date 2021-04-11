@@ -1,11 +1,17 @@
-[package]
-name = "ferrous-walkthrough"
-version = "0.1.0"
-authors = ["Alastair Smith <Alastair-smith2@users.noreply.github.com>"]
-edition = "2018"
+# [package]
+# name = "ferrous-walkthrough"
+# version = "0.1.0"
+# authors = ["Alastair Smith <Alastair-smith2@users.noreply.github.com>"]
+# edition = "2018"
 
-# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+# # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
-[dependencies]
-url = "2"
-tempdir = "0.3"
+# [dependencies]
+# url = "2"
+# async-std = { version = "1", features = ["unstable"] }
+
+# [dev-dependencies]
+# tempdir = "0.3"
+
+[workspace]
+members = ["redisish", "mailbox"]
