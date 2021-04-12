@@ -1,8 +1,9 @@
-use redisish::Command;
 use std::collections::VecDeque;
 use std::io::prelude::*;
 use std::io::BufReader;
 use std::net::{TcpListener, TcpStream};
+use std::sync::{Arc, Mutex};
+use std::thread;
 
 use thiserror::Error;
 #[derive(Error, Debug)]
@@ -15,7 +16,7 @@ pub enum MailBoxError {
 
 type Result<T> = std::result::Result<T, MailBoxError>;
 pub fn main() -> Result<()> {
-    let mut storage: VecDeque<String> = VecDeque::new();
+    let storage: Arc<Mutex<VecDeque<String>>> = Arc::new(Mutex::new(VecDeque::new()));
     let listener = TcpListener::bind("127.0.0.1:8080")?;
 
     // accept connections and process them serially
@@ -27,12 +28,16 @@ pub fn main() -> Result<()> {
                 continue;
             }
         };
+        let storage_clone = Arc::clone(&storage);
+        let handler = thread::spawn(move || {
+            let mut vec_storage = storage_clone.lock().unwrap();
+            let res = handle(stream, &mut *vec_storage);
 
-        let res = handle(stream, &mut storage);
-
-        if let Err(e) = res {
-            println!("Error occured: {:?}", e);
-        }
+            if let Err(e) = res {
+                println!("Error occured: {:?}", e);
+            }
+        });
+        handler.join().unwrap();
     }
 
     Ok(())
