@@ -56,7 +56,7 @@ fn handle(stream: &mut TcpStream, mutex: &Mutex<VecDeque<String>>) -> Result<()>
             let data = storage.pop_front();
             match data {
                 Some(message) => write!(stream, "{}", message)?,
-                None => write!(stream, "No message in inbox!\n")?,
+                None => writeln!(stream, "No message in inbox!")?,
             };
         }
     }
