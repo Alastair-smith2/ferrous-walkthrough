@@ -3,7 +3,6 @@ use std::io::prelude::*;
 use std::io::BufReader;
 use std::net::{TcpListener, TcpStream};
 use std::sync::{Arc, Mutex};
-use std::thread;
 
 use thiserror::Error;
 #[derive(Error, Debug)]
@@ -16,22 +15,24 @@ pub enum MailBoxError {
 
 type Result<T> = std::result::Result<T, MailBoxError>;
 pub fn main() -> Result<()> {
-    let storage: Arc<Mutex<VecDeque<String>>> = Arc::new(Mutex::new(VecDeque::new()));
-    let listener = TcpListener::bind("127.0.0.1:8080")?;
+    let listener = TcpListener::bind("127.0.0.1:8080").unwrap();
 
-    // accept connections and process them serially
+    let storage = VecDeque::new();
+    let rced_storage: Arc<Mutex<VecDeque<String>>> = Arc::new(Mutex::new(storage));
+
     for connection in listener.incoming() {
-        let stream = match connection {
+        let mut stream = match connection {
             Ok(stream) => stream,
             Err(e) => {
                 println!("Error occured: {:?}", e);
                 continue;
             }
         };
-        let storage_clone = Arc::clone(&storage);
-        thread::spawn(move || {
-            let mut vec_storage = storage_clone.lock().unwrap();
-            let res = handle(stream, &mut *vec_storage);
+
+        let storage_handle = rced_storage.clone();
+
+        std::thread::spawn(move || {
+            let res = handle(&mut stream, &storage_handle);
 
             if let Err(e) = res {
                 println!("Error occured: {:?}", e);
@@ -42,20 +43,21 @@ pub fn main() -> Result<()> {
     Ok(())
 }
 
-fn handle(mut stream: TcpStream, storage: &mut VecDeque<String>) -> Result<()> {
-    let command = read_command(&mut stream)?;
+fn handle(stream: &mut TcpStream, mutex: &Mutex<VecDeque<String>>) -> Result<()> {
+    let command = read_command(stream)?;
 
     match command {
         redisish::Command::Publish(message) => {
+            let mut storage = mutex.lock().unwrap();
             storage.push_back(message);
         }
         redisish::Command::Retrieve => {
+            let mut storage = mutex.lock().unwrap();
             let data = storage.pop_front();
-
             match data {
                 Some(message) => write!(stream, "{}", message)?,
                 None => write!(stream, "No message in inbox!\n")?,
-            }
+            };
         }
     }
     Ok(())
