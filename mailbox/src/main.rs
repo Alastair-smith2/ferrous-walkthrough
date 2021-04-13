@@ -29,7 +29,7 @@ pub fn main() -> Result<()> {
             }
         };
         let storage_clone = Arc::clone(&storage);
-        let handler = thread::spawn(move || {
+        thread::spawn(move || {
             let mut vec_storage = storage_clone.lock().unwrap();
             let res = handle(stream, &mut *vec_storage);
 
@@ -37,7 +37,6 @@ pub fn main() -> Result<()> {
                 println!("Error occured: {:?}", e);
             }
         });
-        handler.join().unwrap();
     }
 
     Ok(())
